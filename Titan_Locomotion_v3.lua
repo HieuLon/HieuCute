@@ -163,6 +163,12 @@ Titan.Kernel = Kernel
 
 --// 4. GLOBAL EXPORT //--
 getgenv().Titan = Titan
+
+Titan.Blackboard = Blackboard
+Titan.Brain = Brain
+Titan.Config = Config
+Titan.Squad = Titan.Squad or {}
+
 return Titan
 --[[
     TITAN AI FRAMEWORK v3.0 [PRODUCTION GRADE]
