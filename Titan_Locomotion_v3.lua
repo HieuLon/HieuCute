@@ -2255,3 +2255,374 @@ Titan.Kernel:RegisterModule({
 })
 
 return Titan
+--------------------------------------------------
+-- TITAN AI : PROFESSIONAL CONTROL DASHBOARD
+--------------------------------------------------
+
+task.spawn(function()
+
+    --------------------------------------------------
+    -- WAIT GAME LOAD
+    --------------------------------------------------
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
+
+    --------------------------------------------------
+    -- VERIFY FRAMEWORK
+    --------------------------------------------------
+    if not getgenv().Titan then
+        warn("[TitanUI] Titan Framework not found")
+        return
+    end
+
+    local Titan = getgenv().Titan
+
+    --------------------------------------------------
+    -- SAFE LOAD UI LIB
+    --------------------------------------------------
+    local success, Rayfield = pcall(function()
+        return loadstring(game:HttpGet(
+            "https://raw.githubusercontent.com/shlexware/Rayfield/main/source"
+        ))()
+    end)
+
+    if not success then
+        warn("[TitanUI] Failed to load Rayfield")
+        return
+    end
+
+
+    --------------------------------------------------
+    -- MAIN WINDOW
+    --------------------------------------------------
+    local Window = Rayfield:CreateWindow({
+
+        Name = "Titan AI Framework",
+        LoadingTitle = "Titan System",
+        LoadingSubtitle = "Combat Automation Suite",
+
+        ConfigurationSaving = {
+            Enabled = true,
+            FolderName = "TitanFramework",
+            FileName = "Dashboard"
+        },
+
+        Discord = {
+            Enabled = false
+        },
+
+        KeySystem = false
+    })
+
+
+    --------------------------------------------------
+    -- GLOBAL STATES
+    --------------------------------------------------
+    local State = {
+        Enabled = true,
+        Aggression = 0.5,
+        Range = 30,
+        Delay = 0.2
+    }
+
+
+    --------------------------------------------------
+    -- MAIN TAB
+    --------------------------------------------------
+    local MainTab = Window:CreateTab("Main", 4483362458)
+
+    MainTab:CreateToggle({
+        Name = "Enable AI Core",
+        CurrentValue = true,
+        Callback = function(v)
+
+            State.Enabled = v
+
+            if Titan.Blackboard then
+                Titan.Blackboard:Set("SystemEnabled", v)
+            end
+
+        end
+    })
+
+
+    MainTab:CreateParagraph({
+        Title = "System Status",
+        Content = "Titan AI Core Running"
+    })
+
+
+    --------------------------------------------------
+    -- COMBAT TAB
+    --------------------------------------------------
+    local CombatTab = Window:CreateTab("Combat", 4483362458)
+
+
+    CombatTab:CreateSlider({
+
+        Name = "Combat Range",
+
+        Range = {5, 150},
+
+        Increment = 1,
+
+        CurrentValue = 30,
+
+        Callback = function(v)
+
+            State.Range = v
+
+            if Titan.Config then
+                Titan.Config.Range = v
+            end
+
+        end
+    })
+
+
+    CombatTab:CreateSlider({
+
+        Name = "Attack Delay",
+
+        Range = {0, 1},
+
+        Increment = 0.01,
+
+        CurrentValue = 0.2,
+
+        Callback = function(v)
+
+            State.Delay = v
+
+            if Titan.Config then
+                Titan.Config.Delay = v
+            end
+
+        end
+    })
+
+
+    CombatTab:CreateSlider({
+
+        Name = "Aggression Level",
+
+        Range = {0, 1},
+
+        Increment = 0.05,
+
+        CurrentValue = 0.5,
+
+        Callback = function(v)
+
+            State.Aggression = v
+
+            if Titan.Brain then
+                Titan.Brain.Aggression = v
+            end
+
+        end
+    })
+
+
+    CombatTab:CreateDropdown({
+
+        Name = "Combat Mode",
+
+        Options = {
+            "Passive",
+            "Balanced",
+            "Aggressive",
+            "Rage"
+        },
+
+        CurrentOption = "Balanced",
+
+        Callback = function(v)
+
+            if Titan.Brain then
+                Titan.Brain.Mode = v
+            end
+
+        end
+    })
+
+
+    --------------------------------------------------
+    -- SQUAD TAB
+    --------------------------------------------------
+    local SquadTab = Window:CreateTab("Squad", 4483362458)
+
+
+    SquadTab:CreateDropdown({
+
+        Name = "Formation",
+
+        Options = {
+            "Line",
+            "Circle",
+            "Wedge",
+            "Surround"
+        },
+
+        CurrentOption = "Circle",
+
+        Callback = function(v)
+
+            if Titan.Squad then
+                Titan.Squad.Formation = v
+            end
+
+        end
+    })
+
+
+    SquadTab:CreateToggle({
+
+        Name = "Focus Fire",
+
+        CurrentValue = true,
+
+        Callback = function(v)
+
+            if Titan.Squad then
+                Titan.Squad.Focus = v
+            end
+
+        end
+    })
+
+
+    --------------------------------------------------
+    -- CONFIG TAB
+    --------------------------------------------------
+    local ConfigTab = Window:CreateTab("Config", 4483362458)
+
+
+    ConfigTab:CreateButton({
+
+        Name = "Save Profile",
+
+        Callback = function()
+            Rayfield:SaveConfiguration()
+        end
+    })
+
+
+    ConfigTab:CreateButton({
+
+        Name = "Load Profile",
+
+        Callback = function()
+            Rayfield:LoadConfiguration()
+        end
+    })
+
+
+    ConfigTab:CreateButton({
+
+        Name = "Auto Tune System",
+
+        Callback = function()
+
+            if Titan.AutoTune then
+                Titan:AutoTune()
+            end
+
+        end
+    })
+
+
+    --------------------------------------------------
+    -- DEBUG TAB
+    --------------------------------------------------
+    local DebugTab = Window:CreateTab("Debug", 4483362458)
+
+
+    DebugTab:CreateButton({
+
+        Name = "Dump Blackboard",
+
+        Callback = function()
+
+            if not Titan.Blackboard then
+                warn("No Blackboard")
+                return
+            end
+
+            warn("===== BLACKBOARD =====")
+
+            for k,v in pairs(Titan.Blackboard._data) do
+                print(k,v)
+            end
+
+        end
+    })
+
+
+    DebugTab:CreateButton({
+
+        Name = "Reload Framework",
+
+        Callback = function()
+
+            Rayfield:Destroy()
+
+            loadstring(game:HttpGet(
+                "https://raw.githubusercontent.com/HieuLon/HieuCute/main/Titan_Locomotion_v3.lua"
+            ))()
+
+        end
+    })
+
+
+    --------------------------------------------------
+    -- MONITOR TAB
+    --------------------------------------------------
+    local MonitorTab = Window:CreateTab("Monitor", 4483362458)
+
+
+    local Status = MonitorTab:CreateParagraph({
+        Title = "Live Monitor",
+        Content = "Initializing..."
+    })
+
+
+    task.spawn(function()
+
+        while task.wait(1) do
+
+            if not getgenv().Titan then
+                Status:Set("System Offline")
+                continue
+            end
+
+            local txt = ""
+
+            if Titan.Blackboard then
+                txt ..= "Target: " .. tostring(Titan.Blackboard:Get("Target")) .. "\n"
+                txt ..= "State: " .. tostring(Titan.Blackboard:Get("State")) .. "\n"
+            end
+
+            if Titan.Brain then
+                txt ..= "Mode: " .. tostring(Titan.Brain.Mode) .. "\n"
+            end
+
+            Status:Set(txt)
+
+        end
+
+    end)
+
+
+    --------------------------------------------------
+    -- READY
+    --------------------------------------------------
+    Rayfield:Notify({
+        Title = "Titan AI",
+        Content = "Dashboard Loaded",
+        Duration = 4
+    })
+
+
+end)
