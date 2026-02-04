@@ -1,3 +1,12 @@
+getgenv().TitanAI = {
+    Enabled = true,
+    Config = {
+        Range = 15,
+        Delay = 0.2
+    },
+    Blackboard = Blackboard -- nếu có
+}
+
 --[[
     TITAN AI FRAMEWORK v2.0 - ARCHITECTURE SKELETON
     Part 1: Core Definitions & Interfaces
@@ -1942,4 +1951,120 @@ local MyGamePlugin = [[
     return Plugin
 ]]
 Titan.Modules.PluginManager:LoadSource(MyGamePlugin)
+--// =========================
+--// UI PANEL - TITAN AI MENU
+--// =========================
+
+task.spawn(function()
+
+    -- Đợi game load xong
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
+
+    -- Load Rayfield UI
+    local Rayfield = loadstring(game:HttpGet(
+        "https://raw.githubusercontent.com/shlexware/Rayfield/main/source"
+    ))()
+
+    -- Tạo cửa sổ chính
+    local Window = Rayfield:CreateWindow({
+        Name = "Titan AI Framework",
+        LoadingTitle = "Titan AI System",
+        LoadingSubtitle = "by HieuLon",
+        ConfigurationSaving = {
+            Enabled = true,
+            FolderName = "TitanAI",
+            FileName = "Config"
+        },
+        Discord = {
+            Enabled = false
+        },
+        KeySystem = false
+    })
+
+    ------------------------------------------------
+    -- TAB: MAIN
+    ------------------------------------------------
+    local MainTab = Window:CreateTab("Main", 4483362458)
+
+    local AIEnabled = true
+
+    MainTab:CreateToggle({
+        Name = "Enable AI",
+        CurrentValue = true,
+        Callback = function(Value)
+            AIEnabled = Value
+
+            if getgenv().TitanAI then
+                getgenv().TitanAI.Enabled = Value
+            end
+
+            Rayfield:Notify({
+                Title = "Titan AI",
+                Content = "AI: " .. (Value and "ON" or "OFF"),
+                Duration = 2
+            })
+        end
+    })
+
+    ------------------------------------------------
+    -- TAB: COMBAT
+    ------------------------------------------------
+    local CombatTab = Window:CreateTab("Combat", 4483362458)
+
+    CombatTab:CreateSlider({
+        Name = "Attack Range",
+        Range = {5, 50},
+        Increment = 1,
+        CurrentValue = 15,
+        Callback = function(Value)
+            if getgenv().TitanAI then
+                getgenv().TitanAI.Config.Range = Value
+            end
+        end
+    })
+
+    CombatTab:CreateSlider({
+        Name = "Attack Delay",
+        Range = {0, 2},
+        Increment = 0.05,
+        CurrentValue = 0.2,
+        Callback = function(Value)
+            if getgenv().TitanAI then
+                getgenv().TitanAI.Config.Delay = Value
+            end
+        end
+    })
+
+    ------------------------------------------------
+    -- TAB: DEBUG
+    ------------------------------------------------
+    local DebugTab = Window:CreateTab("Debug", 4483362458)
+
+    DebugTab:CreateButton({
+        Name = "Print Blackboard",
+        Callback = function()
+            if getgenv().TitanAI and getgenv().TitanAI.Blackboard then
+                print("=== BLACKBOARD DATA ===")
+                for k,v in pairs(getgenv().TitanAI.Blackboard._data) do
+                    print(k,v)
+                end
+            else
+                warn("TitanAI not initialized")
+            end
+        end
+    })
+
+    DebugTab:CreateButton({
+        Name = "Reload Script",
+        Callback = function()
+            Rayfield:Destroy()
+            loadstring(game:HttpGet(
+                "https://raw.githubusercontent.com/HieuLon/HieuCute/main/main.lua"
+            ))()
+        end
+    })
+
+end)
 
